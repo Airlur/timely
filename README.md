@@ -26,7 +26,7 @@
 
 ### 构建
 
-push 到 main 后由 GitHub Actions 自动出包并发布 Release。正式签名通过仓库 Secrets 注入（`KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`）；未配置时回退 debug 签名。本地构建需要 JDK 17 + Android SDK 34。
+push 到 main 后由 GitHub Actions 自动跑单元测试、构建 APK 并发布 Release。签名与 AirMouse 相同：仓库内置的标准 debug 密钥，debug/release 共用，版本间可直接覆盖安装。本地构建需要 JDK 17 + Android SDK 34。
 
 ### 协议
 

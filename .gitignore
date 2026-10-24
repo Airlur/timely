@@ -9,10 +9,6 @@ local.properties
 *.iml
 .DS_Store
 
-# 签名密钥：正式 keystore 与其配置严禁入库（CI 由 GitHub Secrets 注入）
-keystore.properties
-keystore/release.jks
-
 # 原型自查产生的临时文件
 proto_*.png
 v2_*.png

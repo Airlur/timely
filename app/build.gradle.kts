@@ -1,19 +1,8 @@
-import java.util.Properties
-import java.io.FileInputStream
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
 }
-
-// 正式签名从根目录 keystore.properties 读取（该文件不入库，CI 上由 secrets 生成）。
-// 文件不存在时退回仓库内的 debug 密钥，保证任何环境都能出可安装的包。
-val keystoreProps = Properties().apply {
-    val f = rootProject.file("keystore.properties")
-    if (f.exists()) load(FileInputStream(f))
-}
-val hasReleaseKey = keystoreProps.isNotEmpty()
 
 android {
     namespace = "com.airlur.timely"
@@ -23,21 +12,15 @@ android {
         applicationId = "com.airlur.timely"
         minSdk = 28
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.1"
         vectorDrawables { useSupportLibrary = true }
     }
 
     signingConfigs {
-        if (hasReleaseKey) {
-            create("release") {
-                storeFile = rootProject.file(keystoreProps["storeFile"] as String)
-                storePassword = keystoreProps["storePassword"] as String
-                keyAlias = keystoreProps["keyAlias"] as String
-                keyPassword = keystoreProps["keyPassword"] as String
-            }
-        }
         getByName("debug") {
+            // 与 AirMouse 同一套标准 debug 密钥（公开信息），debug/release 共用，
+            // CI 免配置、版本间可覆盖升级。将来上架商店时再换成专用正式密钥。
             storeFile = rootProject.file("keystore/debug.jks")
             storePassword = "android"
             keyAlias = "androiddebugkey"
@@ -47,9 +30,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release")
-                            else signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("debug")
         }
         debug {
             signingConfig = signingConfigs.getByName("debug")
