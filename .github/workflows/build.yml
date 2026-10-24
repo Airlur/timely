@@ -97,4 +97,4 @@ jobs:
 
             ### 更新
             直接覆盖安装即可；如遇「签名不一致」，先卸载旧版再装。
-        files: out/*.apk
+          files: out/*.apk
