@@ -362,8 +362,8 @@ fun CircularReveal(
 fun Segmented(
     options: List<Pair<String, String>>,
     current: String,
-    onSelect: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSelect: (String) -> Unit
 ) {
     Row(
         modifier

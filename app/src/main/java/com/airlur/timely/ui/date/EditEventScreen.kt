@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -65,6 +66,7 @@ import com.airlur.timely.data.PrefsRepository
 import com.airlur.timely.data.Repeat
 import com.airlur.timely.data.TimeUnit
 import com.airlur.timely.notify.AlarmScheduler
+import com.airlur.timely.ui.eventBackground
 import com.airlur.timely.ui.theme.PresetColors
 import com.airlur.timely.ui.theme.PresetGradients
 import com.airlur.timely.ui.theme.Primary
@@ -199,8 +201,7 @@ fun EditEventScreen(
                     OutlinedTextField(
                         value = title, onValueChange = { if (it.length <= 20) title = it },
                         placeholder = { Text(stringResource(R.string.title_hint)) },
-                        singleLine = true, modifier = Modifier.fillMaxWidth(),
-                        colors = textFieldUnfocused()
+                        singleLine = true, modifier = Modifier.fillMaxWidth()
                     )
                 }
                 FormRow(icon = "📅", label = stringResource(R.string.target_date), value = dateText, onClick = { sheet = "date" })
@@ -490,7 +491,7 @@ private fun CardBlock(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun FormRow(icon: String, label: String?, value: String?, onClick: (() -> Unit)? = null, content: (@Composable () -> Unit)? = null) {
+private fun FormRow(icon: String, label: String?, value: String? = null, onClick: (() -> Unit)? = null, content: (@Composable () -> Unit)? = null) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -528,14 +529,6 @@ private fun SwitchRow(icon: String, label: String, checked: Boolean, onChange: (
         Switch(checked = checked, onCheckedChange = onChange)
     }
 }
-
-@Composable
-private fun textFieldUnfocused() = androidx.compose.material3.TextFieldDefaults.colors(
-    focusedContainerColor = Color.Transparent,
-    unfocusedContainerColor = Color.Transparent,
-    focusedBorderColor = Color.Transparent,
-    unfocusedBorderColor = Color.Transparent
-)
 
 /* ---------- 样式设置页（纯色/渐变/图片 + 图标 + 字体 + 实时预览） ---------- */
 
@@ -593,7 +586,7 @@ fun StylePage(
                         .eventBackground(previewEvent)
                         .padding(horizontal = 16.dp, vertical = 14.dp)
                 ) {
-                    Column {
+                    Column(Modifier.padding(vertical = 4.dp)) {
                         Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = previewBg.ink)
                         Spacer(Modifier.height(2.dp))
                         Text(dateText, fontSize = 14.sp, color = previewBg.ink)
@@ -691,6 +684,7 @@ fun StylePage(
 private fun Modifier.border2(): Modifier =
     this.then(Modifier.border(3.dp, Primary, RoundedCornerShape(8.dp)))
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ColorGrid(colors: List<Color>, selected: Int?, onPick: (Color) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
@@ -708,6 +702,7 @@ private fun ColorGrid(colors: List<Color>, selected: Int?, onPick: (Color) -> Un
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CustomColorAdd(onAdd: (Color) -> Unit) {
     var hue by remember { mutableStateOf(200f) }
@@ -723,6 +718,7 @@ private fun CustomColorAdd(onAdd: (Color) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CustomGradientAdd(onAdd: (Color, Color) -> Unit) {
     var h1 by remember { mutableStateOf(340f) }
@@ -742,13 +738,17 @@ private fun CustomGradientAdd(onAdd: (Color, Color) -> Unit) {
     }
 }
 
-private fun copyUriToFile(uriString: String, oldPath: String?, context: android.content.Context): String? = try {
-    val stream = context.contentResolver.openInputStream(android.net.Uri.parse(uriString)) ?: return null
-    val bmp = android.graphics.BitmapFactory.decodeStream(stream) ?: return null
-    stream.close()
-    val dir = java.io.File(context.filesDir, "images").apply { mkdirs() }
-    val f = java.io.File(dir, "bg_" + System.currentTimeMillis() + ".jpg")
-    f.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 88, it) }
-    oldPath?.let { java.io.File(it).delete() }
-    f.absolutePath
-} catch (e: Exception) { null }
+private fun copyUriToFile(uriString: String, oldPath: String?, context: android.content.Context): String? {
+    return try {
+        val stream = context.contentResolver.openInputStream(android.net.Uri.parse(uriString)) ?: return null
+        val bmp = android.graphics.BitmapFactory.decodeStream(stream) ?: return null
+        stream.close()
+        val dir = java.io.File(context.filesDir, "images").apply { mkdirs() }
+        val f = java.io.File(dir, "bg_" + System.currentTimeMillis() + ".jpg")
+        f.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 88, it) }
+        oldPath?.let { java.io.File(it).delete() }
+        f.absolutePath
+    } catch (e: Exception) {
+        null
+    }
+}

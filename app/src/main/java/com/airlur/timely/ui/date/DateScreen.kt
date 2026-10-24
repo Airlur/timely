@@ -577,8 +577,8 @@ fun DragReorderList(
                     .pointerInput(event.id, ordered.size) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = { draggingId = event.id; dragOffset = 0f },
-                            onDrag = { _, dy ->
-                                dragOffset += dy
+                            onDrag = { _, dragAmount ->
+                                dragOffset += dragAmount.y
                                 while (kotlin.math.abs(dragOffset) > itemH) {
                                     val dir = if (dragOffset > 0) 1 else -1
                                     val from = order.value.indexOf(event.id)

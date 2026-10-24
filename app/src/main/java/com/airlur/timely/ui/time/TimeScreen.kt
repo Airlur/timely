@@ -147,11 +147,14 @@ private fun CountdownPane() {
             }
         }
         Spacer(Modifier.height(18.dp))
+        val hLabel = stringResource(R.string.hours)
+        val mLabel = stringResource(R.string.minutes)
+        val sLabel = stringResource(R.string.seconds)
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             listOf(
-                stringResource(R.string.hours) to { delta: Int -> h = (h + delta).coerceIn(0, 99) },
-                stringResource(R.string.minutes) to { delta: Int -> m = (m + delta).coerceIn(0, 59) },
-                stringResource(R.string.seconds) to { delta: Int -> s = (s + delta).coerceIn(0, 59) }
+                hLabel to { delta: Int -> h = (h + delta).coerceIn(0, 99) },
+                mLabel to { delta: Int -> m = (m + delta).coerceIn(0, 59) },
+                sLabel to { delta: Int -> s = (s + delta).coerceIn(0, 59) }
             ).forEach { (label, step) ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -160,8 +163,8 @@ private fun CountdownPane() {
                         StepBtn("−") { step(-1) }
                         Text(
                             when (label) {
-                                stringResource(R.string.hours) -> h.toString()
-                                stringResource(R.string.minutes) -> m.toString()
+                                hLabel -> h.toString()
+                                mLabel -> m.toString()
                                 else -> s.toString()
                             },
                             fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(46.dp),

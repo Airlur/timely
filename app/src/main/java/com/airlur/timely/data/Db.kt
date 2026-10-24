@@ -29,7 +29,7 @@ data class EventEntity(
     val gradientEnd: Int? = null,
     val imagePath: String? = null,
     val isLunar: Boolean = false,
-    val categoryId: Int? = null,
+    val categoryId: Long? = null,
     val sortOrder: Int = 0,
     val iconName: String? = null,   // emoji
     val fontFamily: String? = null, // null / serif / mono
