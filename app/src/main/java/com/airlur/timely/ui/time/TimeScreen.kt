@@ -122,10 +122,11 @@ private fun CountdownPane() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(22.dp))
+        val ringTrack = MaterialTheme.colorScheme.surfaceVariant
         Box(Modifier.size(212.dp), contentAlignment = Alignment.Center) {
             Canvas(Modifier.fillMaxSize()) {
                 drawArc(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = ringTrack,
                     startAngle = -90f, sweepAngle = 360f, useCenter = false,
                     style = Stroke(width = 11.dp.toPx(), cap = StrokeCap.Round)
                 )

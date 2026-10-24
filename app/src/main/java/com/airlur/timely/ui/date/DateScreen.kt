@@ -55,7 +55,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -573,7 +572,7 @@ fun DragReorderList(
             Box(
                 Modifier
                     .animateItemPlacement()
-                    .graphicsLayer { translationY = if (isDragging) dragOffset else 0f }
+                    .offset { androidx.compose.ui.unit.IntOffset(0, (if (isDragging) dragOffset else 0f).roundToInt()) }
                     .pointerInput(event.id, ordered.size) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = { draggingId = event.id; dragOffset = 0f },
@@ -817,7 +816,7 @@ fun ManageCategoriesDialog(
                         Text((c.icon ?: "") + " " + c.name, modifier = Modifier.weight(1f))
                         Text(
                             "✕", color = MaterialTheme.colorScheme.error,
-                            Modifier.clickable {
+                            modifier = Modifier.clickable {
                                 scope.launch {
                                     if (eventDao.getAll().none { it.categoryId == c.id }) catDao.delete(c.id)
                                 }

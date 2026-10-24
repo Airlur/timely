@@ -70,7 +70,7 @@ object RepeatRule {
         if (!after.isAfter(base)) return base
         val monthsDiff = (after.year - base.year) * 12L + (after.monthValue - base.monthValue)
         var candidate = addMonths(base, (monthsDiff / intervalMonths.toLong()) * intervalMonths)
-        while (candidate.isBefore(after)) candidate = addMonths(candidate, intervalMonths)
+        while (candidate.isBefore(after)) candidate = addMonths(candidate, intervalMonths.toLong())
         return candidate
     }
 
@@ -78,7 +78,7 @@ object RepeatRule {
         if (!after.isAfter(base)) return base
         val yearsDiff = (after.year - base.year).toLong()
         var candidate = addYears(base, (yearsDiff / intervalYears.toLong()) * intervalYears)
-        while (candidate.isBefore(after)) candidate = addYears(candidate, intervalYears)
+        while (candidate.isBefore(after)) candidate = addYears(candidate, intervalYears.toLong())
         return candidate
     }
 
@@ -86,7 +86,7 @@ object RepeatRule {
     fun addMonths(date: LocalDate, months: Long): LocalDate {
         val y = date.year + (date.monthValue - 1 + months) / 12
         val m = ((date.monthValue - 1 + months) % 12 + 12) % 12 + 1
-        val day = minOf(date.dayOfMonth, LocalDate.of(y.toInt(), m, 1).lengthOfMonth())
+        val day = minOf(date.dayOfMonth, LocalDate.of(y.toInt(), m.toInt(), 1).lengthOfMonth())
         return LocalDate.of(y.toInt(), m.toInt(), day)
     }
 

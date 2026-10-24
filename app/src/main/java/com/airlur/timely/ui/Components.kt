@@ -37,7 +37,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.draw.graphicsLayer
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -322,7 +322,7 @@ fun Watermark(
         WmOpacity.HIGH -> 0.30f
     }
     Box(modifier, contentAlignment = Alignment.Center) {
-        Canvas(Modifier.size(64.dp).graphicsLayer { this.alpha = alpha }) {
+        Canvas(Modifier.size(64.dp).alpha(alpha)) {
             rotate(degrees = -24f, pivot = center) {
                 drawOval(
                     color = tint,
