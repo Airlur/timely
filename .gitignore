@@ -9,6 +9,10 @@ local.properties
 *.iml
 .DS_Store
 
+# 作废的正式密钥（曾短暂误入库，已作废未签发过任何包）
+keystore.properties
+keystore/release.jks
+
 # 原型自查产生的临时文件
 proto_*.png
 v2_*.png
