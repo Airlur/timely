@@ -2,6 +2,7 @@ package com.airlur.timely.domain
 
 import com.airlur.timely.data.Repeat
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 object RepeatRule {
 
@@ -61,14 +62,14 @@ object RepeatRule {
         if (!after.isAfter(base)) return base
         val diff = ChronoUnit.DAYS.between(base, after)
         val remainder = diff % intervalDays
-        val add = if (remainder == 0L) diff else diff + (intervalDays - remainder)
+        val add = if (remainder == 0L) diff else diff + (intervalDays.toLong() - remainder)
         return base.plusDays(add)
     }
 
     private fun nextByMonths(base: LocalDate, after: LocalDate, intervalMonths: Int): LocalDate {
         if (!after.isAfter(base)) return base
         val monthsDiff = (after.year - base.year) * 12L + (after.monthValue - base.monthValue)
-        var candidate = addMonths(base, (monthsDiff / intervalMonths) * intervalMonths)
+        var candidate = addMonths(base, (monthsDiff / intervalMonths.toLong()) * intervalMonths)
         while (candidate.isBefore(after)) candidate = addMonths(candidate, intervalMonths)
         return candidate
     }
@@ -76,7 +77,7 @@ object RepeatRule {
     private fun nextByYears(base: LocalDate, after: LocalDate, intervalYears: Int): LocalDate {
         if (!after.isAfter(base)) return base
         val yearsDiff = (after.year - base.year).toLong()
-        var candidate = addYears(base, (yearsDiff / intervalYears) * intervalYears)
+        var candidate = addYears(base, (yearsDiff / intervalYears.toLong()) * intervalYears)
         while (candidate.isBefore(after)) candidate = addYears(candidate, intervalYears)
         return candidate
     }
