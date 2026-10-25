@@ -9,6 +9,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -155,8 +157,10 @@ val TRIGGER_ZONES_DP = listOf(52, 112, 176, 246)
 
 /**
  * 双模式滑动卡片容器（对应旧版 flutter_slidable + 新增的松手触发）：
- * REVEAL：滑开露出整排按钮，点按钮执行；
- * TRIGGER：按距离分段渐显彩色层、变色锁定，松手即执行。
+ * REVEAL 滑开露出按钮点按执行；TRIGGER 按距离分段渐显、松手即执行。
+ * 根布局 fillMaxWidth + IntrinsicSize.Min：尺寸完全由内容卡片决定，
+ * 底层按钮层 fillMaxHeight 跟随卡片高度——修复列表/示例页卡片塌陷。
+ * REVEAL 只渲染当前露出侧的按钮，避免两侧 252dp 按钮互相叠字。
  */
 @Composable
 fun SwipeCard(
@@ -173,39 +177,28 @@ fun SwipeCard(
     val armed = remember { mutableStateOf(-1) } // 0..2 = 命中的段
     val armedSide = remember { mutableStateOf(0) } // 0 = 左滑（右侧槽） 1 = 右滑（左侧槽）
     val open = remember { mutableStateOf(false) }
+    val revealSide = remember { mutableStateOf(0) } // REVEAL 当前露出的侧
 
     fun reset() {
         offsetX.value = 0f; armed.value = -1; open.value = false
     }
 
-    Box(modifier.clip(RoundedCornerShape(8.dp))) {
-        // 底层动作（REVEAL 模式常驻，卡片移开后露出；左滑右侧 + 右滑左侧）
+    Box(
+        modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .height(IntrinsicSize.Min)
+    ) {
+        // REVEAL 底层按钮：只画当前露出的一侧
         if (mode == SwipeMode.REVEAL) {
+            val side = revealSide.value
             Row(
                 Modifier
-                    .align(Alignment.CenterStart)
+                    .align(if (side == 1) Alignment.CenterStart else Alignment.CenterEnd)
                     .width(252.dp)
                     .fillMaxHeight()
             ) {
-                slots[1].forEach { s ->
-                    Box(
-                        Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .background(s.color),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(s.label, color = Color.White, fontSize = 12.sp, maxLines = 1)
-                    }
-                }
-            }
-            Row(
-                Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(252.dp)
-                    .fillMaxHeight()
-            ) {
-                slots[0].forEach { s ->
+                slots[side].forEach { s ->
                     Box(
                         Modifier
                             .weight(1f)
@@ -219,10 +212,10 @@ fun SwipeCard(
             }
         }
 
-        // 卡片本体
+        // 内容卡片（决定整体尺寸，也是点击目标）
         Box(
             Modifier
-                .matchParentSize()
+                .fillMaxWidth()
                 .offset { androidx.compose.ui.unit.IntOffset(offsetX.value.roundToInt(), 0) }
                 .pointerInput(mode, slots) {
                     detectDragGestures(
@@ -245,7 +238,9 @@ fun SwipeCard(
                     ) { change, drag ->
                         change.consume()
                         if (mode == SwipeMode.REVEAL) {
-                            offsetX.value = (offsetX.value + drag.x).coerceIn(-openWidthPx - 40f, openWidthPx + 40f)
+                            val nx = (offsetX.value + drag.x).coerceIn(-openWidthPx, openWidthPx)
+                            if (nx != 0f) revealSide.value = if (nx < 0) 0 else 1
+                            offsetX.value = nx
                         } else {
                             val nx = offsetX.value + drag.x * 0.82f
                             offsetX.value = nx.coerceIn(-zonePx.last(), zonePx.last())
@@ -262,35 +257,39 @@ fun SwipeCard(
                 }
         ) { content() }
 
-        // TRIGGER 模式：渐显彩色层（左滑右侧槽 / 右滑左侧槽）
+        // TRIGGER 模式：渐显彩色层（跟手、只显示当前命中侧）
         if (mode == SwipeMode.TRIGGER) {
             val idx = armed.value
             if (idx >= 0) {
                 val isLeft = offsetX.value < 0
-                val s = slots[armedSide.value][idx.coerceAtMost(2)]
+                val slot = slots[armedSide.value][idx.coerceAtMost(2)]
                 Box(
                     Modifier
                         .align(if (isLeft) Alignment.CenterEnd else Alignment.CenterStart)
                         .width(with(density) { kotlin.math.abs(offsetX.value).toDp() })
                         .fillMaxHeight()
-                        .background(s.color),
+                        .background(slot.color),
                     contentAlignment = if (isLeft) Alignment.CenterEnd else Alignment.CenterStart
                 ) {
-                    Text(s.label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        slot.label, color = Color.White, fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold, maxLines = 1,
+                        modifier = Modifier.padding(horizontal = 14.dp)
+                    )
                 }
             }
         }
 
-        // REVEAL 模式：展开后的点击层（两侧）
+        // REVEAL 模式：展开后的点击层（位于卡片之上）
         if (mode == SwipeMode.REVEAL && open.value) {
-            val showLeft = offsetX.value < 0
+            val side = revealSide.value
             Row(
                 Modifier
-                    .align(if (showLeft) Alignment.CenterEnd else Alignment.CenterStart)
+                    .align(if (side == 1) Alignment.CenterStart else Alignment.CenterEnd)
                     .width(252.dp)
                     .fillMaxHeight()
             ) {
-                slots[if (showLeft) 0 else 1].forEach { s ->
+                slots[side].forEach { s ->
                     Box(
                         Modifier
                             .weight(1f)
@@ -382,7 +381,7 @@ fun Segmented(
             ) {
                 Text(
                     label,
-                    fontSize = 12.sp,
+                    fontSize = 12.sp, maxLines = 1,
                     color = if (on) MaterialTheme.colorScheme.onSurface
                             else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal

@@ -122,34 +122,45 @@ fun SettingsScreen(
         ) {
             SectionLabel(stringResource(R.string.sec_general))
             GroupCard {
-                RowItem(
-                    icon = Icons.Rounded.BrightnessMedium,
-                    title = stringResource(R.string.theme),
-                    trailing = {
-                        Segmented(
-                            listOf(
-                                ThemeMode.SYSTEM.name to stringResource(R.string.follow_system),
-                                ThemeMode.LIGHT.name to stringResource(R.string.light_mode),
-                                ThemeMode.DARK.name to stringResource(R.string.dark_mode)
-                            ),
-                            settings.theme.name
-                        ) { scope.launch { prefs.setTheme(ThemeMode.valueOf(it)) } }
+                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Icon(Icons.Rounded.BrightnessMedium, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        Text(stringResource(R.string.theme), fontSize = 15.sp)
                     }
-                )
-                RowItem(
-                    icon = Icons.Rounded.Language,
-                    title = stringResource(R.string.language),
-                    trailing = {
-                        Segmented(
-                            listOf(
-                                LangMode.SYSTEM.name to stringResource(R.string.follow_system),
-                                LangMode.ZH.name to "中文",
-                                LangMode.EN.name to "English"
-                            ),
-                            settings.lang.name
-                        ) { scope.launch { prefs.setLang(LangMode.valueOf(it)) } }
+                    Spacer(Modifier.height(10.dp))
+                    Segmented(
+                        listOf(
+                            ThemeMode.SYSTEM.name to stringResource(R.string.follow_system),
+                            ThemeMode.LIGHT.name to stringResource(R.string.light_mode),
+                            ThemeMode.DARK.name to stringResource(R.string.dark_mode)
+                        ),
+                        settings.theme.name,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { scope.launch { prefs.setTheme(ThemeMode.valueOf(it)) } }
+                }
+                HorizontalDivider(Modifier.padding(start = 52.dp))
+                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Icon(Icons.Rounded.Language, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        Text(stringResource(R.string.language), fontSize = 15.sp)
                     }
-                )
+                    Spacer(Modifier.height(10.dp))
+                    Segmented(
+                        listOf(
+                            LangMode.SYSTEM.name to stringResource(R.string.follow_system),
+                            LangMode.ZH.name to "中文",
+                            LangMode.EN.name to "EN"
+                        ),
+                        settings.lang.name,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        scope.launch {
+                            prefs.setLang(LangMode.valueOf(it))
+                            // per-app locale 切换后立即重建，文案即时生效
+                            (ctx as? android.app.Activity)?.recreate()
+                        }
+                    }
+                }
             }
             SectionLabel(stringResource(R.string.sec_gesture))
             GroupCard {

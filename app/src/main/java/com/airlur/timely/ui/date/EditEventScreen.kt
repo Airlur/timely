@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -261,7 +262,11 @@ fun EditEventScreen(
     /* ---- 弹层 ---- */
     if (sheet == "date") {
         ModalBottomSheet(onDismissRequest = { sheet = null }) {
-            Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+            Column(
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.is_lunar), modifier = Modifier.weight(1f))
                     Switch(checked = lunar, onCheckedChange = { lunar = it })
@@ -304,7 +309,11 @@ fun EditEventScreen(
 
     if (sheet == "cat") {
         ModalBottomSheet(onDismissRequest = { sheet = null }) {
-            Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+            Column(
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AssistChip(
                         onClick = { categoryId = null; sheet = null },
@@ -329,7 +338,11 @@ fun EditEventScreen(
 
     if (sheet == "rem") {
         ModalBottomSheet(onDismissRequest = { sheet = null }) {
-            Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+            Column(
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
                 val rDate = remember { mutableStateOf(reminder?.toLocalDate() ?: date) }
                 val rTime = remember { mutableStateOf(reminder?.toLocalTime() ?: LocalTime.of(9, 0)) }
                 val dpState = rememberDatePickerState(
@@ -358,7 +371,7 @@ fun EditEventScreen(
 
     if (sheet == "rep") {
         ModalBottomSheet(onDismissRequest = { sheet = null }) {
-            Column(Modifier.padding(bottom = 24.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
                 listOf(
                     Repeat.NONE to stringResource(R.string.repeat_none),
                     Repeat.DAILY to stringResource(R.string.repeat_daily),
@@ -429,7 +442,11 @@ fun EditEventScreen(
 
     if (sheet == "end") {
         ModalBottomSheet(onDismissRequest = { sheet = null }) {
-            Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+            Column(
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
                 Text(stringResource(R.string.end_time_hint), fontSize = 12.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 val dpState = rememberDatePickerState(
                     initialSelectedDateMillis = (endTime ?: LocalDate.now().plusYears(1))
@@ -607,9 +624,16 @@ fun StylePage(
             }
             TabRow(selectedTabIndex = tab, containerColor = MaterialTheme.colorScheme.surface) {
                 listOf(stringResource(R.string.solid_color), stringResource(R.string.gradient), stringResource(R.string.image_bg))
-                    .forEachIndexed { i, label -> Tab(selected = tab == i, onClick = { tab = i }, text = { Text(label) }) }
+                    .forEachIndexed { i, label ->
+                        Tab(selected = tab == i, onClick = { tab = i }, text = { Text(label, maxLines = 1) })
+                    }
             }
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
                 // 实时预览
                 val previewBg = com.airlur.timely.ui.eventBg(
                     previewEvent, MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.onSurface
@@ -618,9 +642,9 @@ fun StylePage(
                     Modifier
                         .fillMaxWidth()
                         .eventBackground(previewEvent)
-                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
-                    Column(Modifier.padding(vertical = 4.dp)) {
+                    Column {
                         Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = previewBg.ink)
                         Spacer(Modifier.height(2.dp))
                         Text(dateText, fontSize = 14.sp, color = previewBg.ink)
@@ -643,29 +667,42 @@ fun StylePage(
                         }
                     }
                     1 -> {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
                             (PresetGradients + settings.customGradients.map { Color(it.first) to Color(it.second) })
-                                .forEach { (s, e) ->
-                                    val sel = bgType == BgType.GRADIENT && gradStart == s.toArgb() && gradEnd == e.toArgb()
-                                    Box(
-                                        Modifier
-                                            .size(48.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(s, e)))
-                                            .clickable { onBg(BgType.GRADIENT, null, s.toArgb(), e.toArgb(), null) }
-                                            .then(if (sel) Modifier.border2() else Modifier)
-                                    )
+                                .chunked(6).forEach { rowGs ->
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                                        rowGs.forEach { (cs, ce) ->
+                                            val sel = bgType == BgType.GRADIENT &&
+                                                gradStart == cs.toArgb() && gradEnd == ce.toArgb()
+                                            Box(
+                                                Modifier
+                                                    .weight(1f)
+                                                    .aspectRatio(1f)
+                                                    .clip(RoundedCornerShape(10.dp))
+                                                    .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(cs, ce)))
+                                                    .clickable { onBg(BgType.GRADIENT, null, cs.toArgb(), ce.toArgb(), null) }
+                                                    .then(
+                                                        if (sel) Modifier.border(3.dp, Primary, RoundedCornerShape(10.dp))
+                                                        else Modifier
+                                                    )
+                                            )
+                                        }
+                                        repeat(6 - rowGs.size) { Spacer(Modifier.weight(1f)) }
+                                    }
                                 }
                         }
                         Spacer(Modifier.height(10.dp))
-                        CustomGradientAdd { s, e ->
-                            onBg(BgType.GRADIENT, null, s.toArgb(), e.toArgb(), null)
-                            scope.launch { prefs.addCustomGradient(s.toArgb(), e.toArgb()) }
+                        CustomGradientAdd { cs, ce ->
+                            onBg(BgType.GRADIENT, null, cs.toArgb(), ce.toArgb(), null)
+                            scope.launch { prefs.addCustomGradient(cs.toArgb(), ce.toArgb()) }
                         }
                     }
-                    2 -> {
-                        Text(stringResource(R.string.pick_from_gallery), color = Primary, fontWeight = FontWeight.SemiBold,
+                    else -> {
+                        Text(
+                            stringResource(R.string.pick_from_gallery),
+                            color = Primary, fontWeight = FontWeight.SemiBold,
                             modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
                                 .clickable {
                                     imageLauncher.launch(
                                         androidx.activity.result.PickVisualMediaRequest(
@@ -673,7 +710,8 @@ fun StylePage(
                                         )
                                     )
                                 }
-                                .padding(vertical = 8.dp))
+                                .padding(vertical = 10.dp)
+                        )
                         if (imagePath != null && bgType == BgType.IMAGE) {
                             TextButton(onClick = { onBg(BgType.NONE, null, null, null, null) }) {
                                 Text(stringResource(R.string.clear), color = MaterialTheme.colorScheme.error)
@@ -682,9 +720,9 @@ fun StylePage(
                     }
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(18.dp))
                 HorizontalDivider()
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 Text(stringResource(R.string.event_icon), fontSize = 12.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 8.dp)) {
                     EMOJI_ICONS.forEach { e ->
@@ -718,20 +756,28 @@ fun StylePage(
 private fun Modifier.border2(): Modifier =
     this.then(Modifier.border(3.dp, Primary, RoundedCornerShape(8.dp)))
 
-@OptIn(ExperimentalLayoutApi::class)
+/** 纯色网格：每行固定 6 列等分，间距统一（修复 FlowRow 参差） */
 @Composable
 private fun ColorGrid(colors: List<Color>, selected: Int?, onPick: (Color) -> Unit) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-        colors.forEach { c ->
-            val sel = selected == c.toArgb()
-            Box(
-                Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(c)
-                    .clickable { onPick(c) }
-                    .then(if (sel) Modifier.border2() else Modifier)
-            )
+    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+        colors.chunked(6).forEach { rowColors ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                rowColors.forEach { c ->
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(c)
+                            .clickable { onPick(c) }
+                            .then(
+                                if (selected == c.toArgb()) Modifier.border(3.dp, Primary, RoundedCornerShape(10.dp))
+                                else Modifier
+                            )
+                    )
+                }
+                repeat(6 - rowColors.size) { Spacer(Modifier.weight(1f)) }
+            }
         }
     }
 }
@@ -743,7 +789,7 @@ private fun CustomColorAdd(onAdd: (Color) -> Unit) {
     var bright by remember { mutableStateOf(0.85f) }
     val color = Color.hsv(hue, 0.72f, bright)
     Column(Modifier.padding(top = 12.dp)) {
-        Box(Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)).background(color))
+        Box(Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(color))
         Text("色相", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Slider(value = hue, onValueChange = { hue = it }, valueRange = 0f..360f)
         Text("明度", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -761,7 +807,7 @@ private fun CustomGradientAdd(onAdd: (Color, Color) -> Unit) {
     val c2 = Color.hsv(h2, 0.65f, 0.75f)
     Column(Modifier.padding(top = 12.dp)) {
         Box(
-            Modifier.size(48.dp).clip(RoundedCornerShape(8.dp))
+            Modifier.size(48.dp).clip(RoundedCornerShape(10.dp))
                 .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(c1, c2)))
         )
         Text("起色相", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)

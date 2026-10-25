@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -196,7 +197,12 @@ fun DateScreen(
                 Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(Modifier.weight(1f).padding(start = 4.dp)) {
+                Row(
+                    Modifier
+                        .weight(1f)
+                        .horizontalScroll(rememberScrollState())
+                        .padding(start = 4.dp)
+                ) {
                     listOf(
                         stringResource(R.string.filter_all),
                         stringResource(R.string.filter_countdown),
@@ -210,7 +216,7 @@ fun DateScreen(
                                 .padding(horizontal = 12.dp, vertical = 12.dp)
                         ) {
                             Text(
-                                label, fontSize = 16.sp,
+                                label, fontSize = 15.sp, maxLines = 1,
                                 color = if (on) Primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Box(
