@@ -4,6 +4,20 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Alarm
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.Category
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.EventAvailable
+import androidx.compose.material.icons.rounded.EventBusy
+import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.PushPin
+import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Title
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -75,7 +89,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private val EMOJI_ICONS = listOf(null, "🚩", "🎂", "💗", "🏠", "💼", "📚", "💰", "🐱", "⭐", "✈️", "🏃", "🎬", "🎁", "⚽", "📅")
 
@@ -138,9 +154,14 @@ fun EditEventScreen(
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // 顶栏：返回 / 标题 / 保存（文字按钮，同旧版）
         Row(Modifier.fillMaxWidth().height(56.dp).background(MaterialTheme.colorScheme.surface), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "‹", fontSize = 26.sp, color = Primary,
-                modifier = Modifier.clickable { onClose() }.padding(horizontal = 18.dp, vertical = 6.dp)
+            Icon(
+                Icons.AutoMirrored.Rounded.ArrowBack,
+                contentDescription = stringResource(R.string.settings),
+                tint = Primary,
+                modifier = Modifier
+                    .clickable { onClose() }
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .size(26.dp)
             )
             Text(
                 if (eventId > 0) stringResource(R.string.edit_event) else stringResource(R.string.new_event),
@@ -180,10 +201,10 @@ fun EditEventScreen(
                         else null
                     )
                     val id = dao.upsert(entity)
-                    val saved = if (entity.id == 0L) entity.copy(id = id) else entity
-                    if (pinned) dao.clearPinnedExcept(saved.id)
-                    AlarmScheduler.rescheduleAll(context)
+                    if (pinned) dao.clearPinnedExcept(if (entity.id == 0L) id else entity.id)
                     onClose()
+                    // 闹钟重排放后台：不能堵在保存路径上（上一版保存卡顿的根源）
+                    withContext(Dispatchers.IO) { AlarmScheduler.rescheduleAll(context) }
                 }
             }) { Text(stringResource(R.string.save), color = Primary, fontWeight = FontWeight.SemiBold) }
         }
@@ -197,38 +218,38 @@ fun EditEventScreen(
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
             // 块1：基础信息
             CardBlock {
-                FormRow(icon = "T", label = null) {
+                FormRow(icon = Icons.Rounded.Title, label = null) {
                     OutlinedTextField(
                         value = title, onValueChange = { if (it.length <= 20) title = it },
                         placeholder = { Text(stringResource(R.string.title_hint)) },
                         singleLine = true, modifier = Modifier.fillMaxWidth()
                     )
                 }
-                FormRow(icon = "📅", label = stringResource(R.string.target_date), value = dateText, onClick = { sheet = "date" })
-                FormRow(icon = "🗂", label = stringResource(R.string.category), value = catName, onClick = { sheet = "cat" })
+                FormRow(icon = Icons.Rounded.CalendarMonth, label = stringResource(R.string.target_date), value = dateText, onClick = { sheet = "date" })
+                FormRow(icon = Icons.Rounded.Category, label = stringResource(R.string.category), value = catName, onClick = { sheet = "cat" })
             }
             Spacer(Modifier.height(12.dp))
             // 块2：时间设置
             CardBlock {
-                FormRow(icon = "⏰", label = stringResource(R.string.reminder_time),
+                FormRow(icon = Icons.Rounded.Alarm, label = stringResource(R.string.reminder_time),
                     value = reminder?.let { "%04d-%02d-%02d %02d:%02d".format(it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute) },
                     onClick = { sheet = "rem" })
-                FormRow(icon = "🔁", label = stringResource(R.string.repeat),
+                FormRow(icon = Icons.Rounded.Repeat, label = stringResource(R.string.repeat),
                     value = repeatLabel(repeat), onClick = { sheet = "rep" })
-                FormRow(icon = "⛔", label = stringResource(R.string.end_time),
+                FormRow(icon = Icons.Rounded.EventBusy, label = stringResource(R.string.end_time),
                     value = endTime?.let { "${it.year}年${it.monthValue}月${it.dayOfMonth}日" }, onClick = { sheet = "end" })
             }
             Spacer(Modifier.height(12.dp))
             // 块3：其他设置
             CardBlock {
-                SwitchRow(icon = "📌", label = stringResource(R.string.pin), checked = pinned) { pinned = it }
-                SwitchRow(icon = "＋", label = stringResource(R.string.include_start_day), checked = includeStart) { includeStart = it }
+                SwitchRow(icon = Icons.Rounded.PushPin, label = stringResource(R.string.pin), checked = pinned) { pinned = it }
+                SwitchRow(icon = Icons.Rounded.EventAvailable, label = stringResource(R.string.include_start_day), checked = includeStart) { includeStart = it }
             }
             Spacer(Modifier.height(12.dp))
             // 块4：样式设置
             CardBlock {
                 FormRow(
-                    icon = "🎨", label = stringResource(R.string.style_settings),
+                    icon = Icons.Rounded.Palette, label = stringResource(R.string.style_settings),
                     value = styleLabel(bgType, icon, font),
                     onClick = { styleOpen = true }
                 )
@@ -491,15 +512,16 @@ private fun CardBlock(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun FormRow(icon: String, label: String?, value: String? = null, onClick: (() -> Unit)? = null, content: (@Composable () -> Unit)? = null) {
+private fun FormRow(icon: ImageVector, label: String?, value: String? = null, onClick: (() -> Unit)? = null, content: (@Composable () -> Unit)? = null) {
     Row(
         Modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text(icon, fontSize = 18.sp, modifier = Modifier.width(30.dp))
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
         if (label != null) {
             Text(label, fontSize = 15.5.sp, modifier = Modifier.weight(1f))
         }
@@ -512,19 +534,24 @@ private fun FormRow(icon: String, label: String?, value: String? = null, onClick
                     color = if (value != null) Primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
-                Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 6.dp))
+                Icon(
+                    Icons.Rounded.ChevronRight, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 4.dp).size(20.dp)
+                )
             }
         }
     }
 }
 
 @Composable
-private fun SwitchRow(icon: String, label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun SwitchRow(icon: ImageVector, label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text(icon, fontSize = 18.sp, modifier = Modifier.width(30.dp))
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
         Text(label, fontSize = 15.5.sp, modifier = Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = onChange)
     }
@@ -566,8 +593,15 @@ fun StylePage(
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("‹", fontSize = 26.sp, color = Primary,
-                    modifier = Modifier.clickable { onClose() }.padding(horizontal = 18.dp, vertical = 6.dp))
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = stringResource(R.string.style_settings),
+                    tint = Primary,
+                    modifier = Modifier
+                        .clickable { onClose() }
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                        .size(26.dp)
+                )
                 Text(stringResource(R.string.style_settings), fontSize = 17.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                 Spacer(Modifier.width(60.dp))
             }

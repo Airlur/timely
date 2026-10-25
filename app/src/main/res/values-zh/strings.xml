@@ -172,4 +172,15 @@
     <string name="demo_triggered">已触发（演示）</string>
     <string name="demo_delete">「删除」（演示）</string>
     <string name="demo_tap_hint">点右侧按钮执行（演示）</string>
+    <string name="timer_notif_title">倒计时结束</string>
+    <string name="timer_notif_body">倒计时归零啦。</string>
+    <string name="turned_on">已开启</string>
+    <string name="turned_off">已关闭</string>
+    <string name="noti_need_permission">请先开启通知权限</string>
+    <string name="sec_general">通用</string>
+    <string name="sec_gesture">手势与外观</string>
+    <string name="sec_support">支持</string>
+    <string name="demo_title">和可颂在一起</string>
+    <string name="demo_date">2024年6月1日 周六</string>
+    <string name="demo_since">已经 876 天</string>
 </resources>

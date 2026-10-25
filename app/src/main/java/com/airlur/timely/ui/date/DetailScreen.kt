@@ -15,8 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.PushPin
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -32,22 +39,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.airlur.timely.R
+import com.airlur.timely.data.BgType
 import com.airlur.timely.data.EventDao
-import com.airlur.timely.data.Repeat
-import com.airlur.timely.data.TimeUnit
 import com.airlur.timely.domain.DateMath
+import com.airlur.timely.domain.Prefix
 import com.airlur.timely.ui.eventBg
 import com.airlur.timely.ui.localDate
 import com.airlur.timely.ui.prefixText
+import com.airlur.timely.ui.rememberImageBitmap
 import com.airlur.timely.ui.theme.fontFamily
 import kotlinx.coroutines.launch
+
+private val TabularNums = TextStyle(fontFeatureSettings = "tnum")
 
 /** 全屏沉浸详情：背景铺满，上中下三段，底部四个图标操作（对照旧版 event_detail_page） */
 @Composable
@@ -74,45 +88,54 @@ fun DetailScreen(
     var unitIdx by remember(event.id) { mutableIntStateOf(0) }
     val num = numbers[unitIdx % numbers.size]
 
-    LaunchedEffect(event.id) { /* placeholder for future animations */ }
+    val bitmap = rememberImageBitmap(event.imagePath)
 
-    val bitmap = com.airlur.timely.ui.rememberImageBitmap(event.imagePath)
-
-    Box(Modifier.fillMaxSize().background(bg.brush ?: androidx.compose.ui.graphics.SolidColor(bg.solid ?: Color.White))) {
-        if (com.airlur.timely.data.BgType.valueOf(event.bgType) == com.airlur.timely.data.BgType.IMAGE && bitmap != null) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(bg.brush ?: SolidColor(bg.solid ?: Color.White))
+    ) {
+        if (BgType.valueOf(event.bgType) == BgType.IMAGE && bitmap != null) {
             androidx.compose.foundation.Image(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = null,
-                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                modifier = Modifier.matchParentSize()
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
             )
         }
         Column(Modifier.fillMaxSize()) {
             // 顶栏：返回 + 置顶
             Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "‹", color = bg.ink, fontSize = 26.sp,
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = stringResource(R.string.event_detail),
+                    tint = bg.ink,
                     modifier = Modifier
                         .clickable { onClose() }
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .size(26.dp)
                 )
                 Spacer(Modifier.weight(1f))
-                Text(
-                    if (event.isPinned) "📌" else "📍",
-                    fontSize = 20.sp,
-                    color = bg.ink,
+                Icon(
+                    if (event.isPinned) Icons.Rounded.PushPin else Icons.Outlined.PushPin,
+                    contentDescription = stringResource(R.string.pin),
+                    tint = bg.ink,
                     modifier = Modifier
                         .clickable {
                             scope.launch {
                                 if (event.isPinned) dao.upsert(event.copy(isPinned = false, pinnedAt = null))
-                                else dao.upsert(event.copy(isPinned = true, pinnedAt = System.currentTimeMillis()))
+                                else {
+                                    dao.clearPinnedExcept(event.id)
+                                    dao.upsert(event.copy(isPinned = true, pinnedAt = System.currentTimeMillis()))
+                                }
                             }
                         }
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .size(24.dp)
                 )
             }
 
-            // 中部内容：图标 + 标题前缀 → 大数字（点按切换单位）→ 日期
+            // 中部：图标 + 标题前缀 → 大数字（点击切换单位）→ 日期
             Column(
                 Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -125,7 +148,7 @@ fun DetailScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         event.title, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = bg.ink,
-                        maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
                         fontFamily = fontFamily(event.fontFamily)
                     )
                     Spacer(Modifier.width(8.dp))
@@ -141,12 +164,12 @@ fun DetailScreen(
                 Spacer(Modifier.height(16.dp))
                 Text(
                     text = when {
-                        display.prefix == com.airlur.timely.domain.Prefix.TODAY && !event.includeStartDay ->
+                        display.prefix == Prefix.TODAY && !event.includeStartDay ->
                             stringResource(R.string.today_word)
                         else -> num.value + " " + numUnitLabel(num.unitKey)
                     },
                     fontSize = 64.sp, fontWeight = FontWeight.Bold, color = bg.ink,
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Center, style = TabularNums,
                     modifier = Modifier
                         .clickable { unitIdx++ }
                         .padding(horizontal = 20.dp, vertical = 8.dp)
@@ -166,14 +189,14 @@ fun DetailScreen(
                 Modifier.fillMaxWidth().padding(vertical = 14.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                DetailAction("↗", stringResource(R.string.act_share), bg.ink) {
+                DetailAction(Icons.Rounded.Share, stringResource(R.string.act_share), bg.ink) {
                     scope.launch { snackbar.showSnackbar(ctx.getString(R.string.share_coming)) }
                 }
-                DetailAction("▦", stringResource(R.string.set_as_widget), bg.ink) {
+                DetailAction(Icons.Rounded.Widgets, stringResource(R.string.set_as_widget), bg.ink) {
                     scope.launch { snackbar.showSnackbar(ctx.getString(R.string.widget_coming)) }
                 }
-                DetailAction("✎", stringResource(R.string.act_edit), bg.ink) { onEdit(event.id) }
-                DetailAction("🗑", stringResource(R.string.act_delete), bg.ink) {
+                DetailAction(Icons.Rounded.Edit, stringResource(R.string.act_edit), bg.ink) { onEdit(event.id) }
+                DetailAction(Icons.Rounded.Delete, stringResource(R.string.act_delete), bg.ink) {
                     scope.launch {
                         dao.delete(event.id)
                         onClose()
@@ -185,12 +208,12 @@ fun DetailScreen(
 }
 
 @Composable
-private fun DetailAction(icon: String, label: String, tint: Color, onClick: () -> Unit) {
+private fun DetailAction(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, tint: Color, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable { onClick() }.padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
-        Text(icon, fontSize = 24.sp, color = tint)
+        Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(24.dp))
         Spacer(Modifier.height(4.dp))
         Text(label, fontSize = 12.sp, color = tint)
     }

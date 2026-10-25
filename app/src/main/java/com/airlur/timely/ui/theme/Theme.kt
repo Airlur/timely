@@ -53,35 +53,89 @@ val PresetGradients = listOf(
     0xFF42275A to 0xFF734B6D, 0xFF141E30 to 0xFF243B55
 ).map { Color(it.first) to Color(it.second) }
 
+/**
+ * 全量配色方案：容器色（按钮/弹窗/Switch/导航指示）必须显式指定，
+ * 否则 Material 3 会落到基线的紫色系——这是上一版"主题很丑"的根源。
+ */
 private val LightScheme = lightColorScheme(
     primary = Primary,
     onPrimary = Color.White,
     primaryContainer = Color(0xFFBBDEFB),
-    onPrimaryContainer = PrimaryDeep,
+    onPrimaryContainer = Color(0xFF0D47A1),
+    secondary = Color(0xFF039BE5),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFE1F5FE),
+    onSecondaryContainer = Color(0xFF01579B),
+    tertiary = Color(0xFF00897B),
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFCCFBF1),
+    onTertiaryContainer = Color(0xFF004D40),
     background = BgLight,
     onBackground = InkLight,
     surface = SurfaceLight,
     onSurface = InkLight,
     surfaceVariant = SurfaceAltLight,
     onSurfaceVariant = InkGray,
-    error = Color(0xFFF02419)
+    surfaceTint = Primary,
+    inverseSurface = Color(0xFF2F3033),
+    inverseOnSurface = Color(0xFFF4F3F4),
+    inversePrimary = Color(0xFF9ECAFF),
+    outline = Color(0xFF9E9E9E),
+    outlineVariant = Color(0xFFE0E0E0),
+    scrim = Color.Black,
+    error = Color(0xFFF02419),
+    onError = Color.White,
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410E0B),
+    surfaceDim = Color(0xFFEDEDED),
+    surfaceBright = Color(0xFFFFFFFF),
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFFBFCFE),
+    surfaceContainer = Color(0xFFF3F3F3),
+    surfaceContainerHigh = Color(0xFFECEEF0),
+    surfaceContainerHighest = Color(0xFFE0E3E8)
 )
 
 private val DarkScheme = darkColorScheme(
-    primary = Primary,
-    onPrimary = Color.White,
+    primary = Color(0xFF64B5F6),
+    onPrimary = Color(0xFF003258),
     primaryContainer = Color(0xFF195582),
     onPrimaryContainer = Color(0xFFBBDEFB),
+    secondary = Color(0xFF4FC3F7),
+    onSecondary = Color(0xFF00344D),
+    secondaryContainer = Color(0xFF0E4C6B),
+    onSecondaryContainer = Color(0xFFB3E5FC),
+    tertiary = Color(0xFF4DB6AC),
+    onTertiary = Color(0xFF003733),
+    tertiaryContainer = Color(0xFF00504A),
+    onTertiaryContainer = Color(0xFFA7F4EC),
     background = BgDark,
     onBackground = InkDark,
     surface = SurfaceDark,
     onSurface = InkDark,
-    surfaceVariant = SurfaceAltDark,
-    onSurfaceVariant = Color(0xFF9A9A9A),
-    error = Color(0xFFF02419)
+    surfaceVariant = Color(0xFF2A2A2A),
+    onSurfaceVariant = Color(0xFF9E9E9E),
+    surfaceTint = Color(0xFF64B5F6),
+    inverseSurface = Color(0xFFE6E1E5),
+    inverseOnSurface = Color(0xFF313033),
+    inversePrimary = Primary,
+    outline = Color(0xFF6E6E6E),
+    outlineVariant = Color(0xFF2A2A2A),
+    scrim = Color.Black,
+    error = Color(0xFFFF5A4E),
+    onError = Color(0xFF370001),
+    errorContainer = Color(0xFF8C1D18),
+    onErrorContainer = Color(0xFFF9DEDC),
+    surfaceDim = Color(0xFF121212),
+    surfaceBright = Color(0xFF3A3A3A),
+    surfaceContainerLowest = Color(0xFF0F0F0F),
+    surfaceContainerLow = SurfaceAltDark,
+    surfaceContainer = SurfaceDark,
+    surfaceContainerHigh = Color(0xFF252525),
+    surfaceContainerHighest = Color(0xFF2B2B2B)
 )
 
-/** 天数等数字统一等宽，与原型一致 */
+/** 天数/计时数字统一等宽（tnum），与原型一致 */
 val NumStyle = TextStyle(
     fontWeight = FontWeight.Bold,
     fontFeatureSettings = "tnum"

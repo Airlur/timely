@@ -33,7 +33,15 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ChevronLeft
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.EventAvailable
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -180,7 +188,7 @@ fun DateScreen(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface,
                 shape = CircleShape
-            ) { Text("+", fontSize = 26.sp) }
+            ) { Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.new_event)) }
         }
     ) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
@@ -216,7 +224,10 @@ fun DateScreen(
                 }
                 Box {
                     TextButton(onClick = { menuOpen = true }) {
-                        Text("⋯", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(
+                            Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.sort),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                         DropdownMenuItem(
@@ -298,7 +309,10 @@ fun DateScreen(
                     if (listItems.isEmpty()) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("◷", fontSize = 40.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Icon(
+                                    Icons.Rounded.EventAvailable, contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(48.dp)
+                                )
                                 Spacer(Modifier.height(10.dp))
                                 Text(
                                     when {
@@ -684,13 +698,21 @@ fun CalendarPane(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("‹", Modifier.clickable { month = month.minusMonths(1) }.padding(8.dp), fontSize = 18.sp)
+            Icon(
+                Icons.Rounded.ChevronLeft, contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.clickable { month = month.minusMonths(1) }.padding(8.dp).size(22.dp)
+            )
             Text(
                 "${month.year}年${month.monthValue}月",
                 fontSize = 17.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f), textAlign = TextAlign.Center
             )
-            Text("›", Modifier.clickable { month = month.plusMonths(1) }.padding(8.dp), fontSize = 18.sp)
+            Icon(
+                Icons.Rounded.ChevronRight, contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.clickable { month = month.plusMonths(1) }.padding(8.dp).size(22.dp)
+            )
         }
         Row(Modifier.padding(horizontal = 12.dp)) {
             listOf("一", "二", "三", "四", "五", "六", "日").forEach {
@@ -816,13 +838,14 @@ fun ManageCategoriesDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text((c.icon ?: "") + " " + c.name, modifier = Modifier.weight(1f))
-                        Text(
-                            "✕", color = MaterialTheme.colorScheme.error,
+                        Icon(
+                            Icons.Rounded.Close, contentDescription = stringResource(R.string.act_delete),
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.clickable {
                                 scope.launch {
                                     if (eventDao.getAll().none { it.categoryId == c.id }) catDao.delete(c.id)
                                 }
-                            }
+                            }.size(20.dp)
                         )
                     }
                 }

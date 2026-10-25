@@ -182,4 +182,15 @@
     <string name="demo_triggered">Triggered (demo)</string>
     <string name="demo_delete">Delete (demo)</string>
     <string name="demo_tap_hint">Tap a button on the right to trigger (demo)</string>
+    <string name="timer_notif_title">Timer finished</string>
+    <string name="timer_notif_body">The countdown reached zero.</string>
+    <string name="turned_on">On</string>
+    <string name="turned_off">Off</string>
+    <string name="noti_need_permission">Grant notification permission first</string>
+    <string name="sec_general">General</string>
+    <string name="sec_gesture">Gestures &amp; look</string>
+    <string name="sec_support">Support</string>
+    <string name="demo_title">Anniversary</string>
+    <string name="demo_date">Jun 1, 2024 · Sat</string>
+    <string name="demo_since">876 days</string>
 </resources>

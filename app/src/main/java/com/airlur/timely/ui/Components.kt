@@ -378,11 +378,11 @@ fun Segmented(
                     .clip(RoundedCornerShape(7.dp))
                     .background(if (on) MaterialTheme.colorScheme.surface else Color.Transparent)
                     .pointerInput(v) { detectTapGestures(onTap = { onSelect(v) }) }
-                    .padding(horizontal = 12.dp, vertical = 5.dp)
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Text(
                     label,
-                    fontSize = 11.5.sp,
+                    fontSize = 12.sp,
                     color = if (on) MaterialTheme.colorScheme.onSurface
                             else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal
