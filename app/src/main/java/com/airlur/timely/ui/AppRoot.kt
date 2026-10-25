@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -29,7 +30,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.graphicsLayer
+import androidx.compose.foundation.layout.offset
+import kotlin.math.roundToInt
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
@@ -67,7 +69,12 @@ private fun SlideIn(content: @Composable () -> Unit) {
     LaunchedEffect(Unit) {
         animate(initialValue = 0f, targetValue = 1f, animationSpec = tween(300)) { v, _ -> t = v }
     }
-    Box(Modifier.fillMaxSize().graphicsLayer { translationX = (1f - t) * size.width }) { content() }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val w = constraints.maxWidth.toFloat()
+        Box(Modifier.offset { androidx.compose.ui.unit.IntOffset(((1f - t) * w).roundToInt(), 0) }) {
+            content()
+        }
+    }
 }
 
 @Composable

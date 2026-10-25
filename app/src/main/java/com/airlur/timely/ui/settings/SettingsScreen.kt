@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -601,7 +602,7 @@ private fun AboutPage(onBack: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     androidx.compose.foundation.Canvas(Modifier.size(32.dp)) {
-                        androidx.compose.ui.graphics.drawscope.rotate(degrees = -24f, pivot = center) {
+                        rotate(degrees = -24f, pivot = center) {
                             drawOval(
                                 color = Color.White,
                                 topLeft = androidx.compose.ui.geometry.Offset(
